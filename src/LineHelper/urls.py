@@ -15,10 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from Notify.views import received_authorize_code, Test_PostData
+from Notify.views import AuthorizeCode
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('AuthorizeCode/', received_authorize_code),
-    path('Test/', Test_PostData)
+    path('AuthorizeCode/', AuthorizeCode.as_view()),
 ]

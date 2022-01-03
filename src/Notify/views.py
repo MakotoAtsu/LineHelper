@@ -1,54 +1,43 @@
-from os import stat
-from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest, JsonResponse
-import httpx
-
+from asgiref.sync import async_to_sync
+from django.views.generic.base import View
+from Notify.service.AuthorizeCodeHelper import AuthorizeCodeHelper
 
 # Create your views here.
 
-token_url = 'https://notify-bot.line.me/oauth/token'
-client_id = 'VpvEjfLIcrwNEPq6Px3NVZ'
-client_secret = '0OHgrhwcv8GhELDaNohMhAjFuVwC5s6JCpfgwN1tQea'
 
+class AuthorizeCode(View):
+    @async_to_sync
+    async def get(self, request: HttpRequest):
 
-async def received_authorize_code(request: HttpRequest):
+        # Step.1 從 QueryString 取得 AuthorizeCode 與 State
+        query_str = request.GET
+        code = query_str.get('code', '')
+        state = query_str.get('state', '')
 
-    query_str = request.GET
+        if (not code or not state):
+            return HttpResponse(f'Invalid Request')
 
-    code = query_str.get('code', '')
-    state = query_str.get('state', '')
+        # Step.2 使用 AuthorizeCode 取回 Access Token
+        service = AuthorizeCodeHelper()
+        token_response = await service.get_line_notify_access_token(code)
 
-    if (not code or not state):
-        return HttpResponse(f'Invalid Request')
+        if (token_response['status'] != 200):
+            print(token_response)
+            return HttpResponse(f'Cannot get room access token...')
 
-    data = {
-        "Code": code,
-        'State': state,
-        'Result': await get_line_notify_access_token(code, state)
-    }
+        access_token = token_response['access_token']
 
-    return JsonResponse(data)
+        room_info = await service.get_notify_room_info(access_token)
 
+        # Step.3 使用 Access Token 取回聊天室資訊
 
-async def get_line_notify_access_token(code: str, state: str):
+        data = {
+            "Code": code,
+            'State': state,
+            'Result': token_response,
+            'token': access_token,
+            'room_info': room_info
+        }
 
-    response = httpx.post(token_url, data={
-        'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': 'https://a143-111-248-245-178.ngrok.io/AuthorizeCode',
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'state': state
-    })
-
-    return response.json()
-
-
-async def Test_PostData(request: HttpRequest):
-
-    response = httpx.get(
-        'https://api4.origin.com/xsearch/store/zh_tw/twn/products?searchTerm=&filterQuery=&start=1&rows=1&isGDP=true')
-
-    print(response)
-    print(response.json())
-    return JsonResponse({})
+        return JsonResponse(data)

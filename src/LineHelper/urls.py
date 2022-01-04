@@ -13,11 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from Notify.service.ChannelService import ChannelService
 from django.contrib import admin
-from django.urls import path
-from Notify.views import AuthorizeCode
+from django.urls import path, re_path
+from Notify.views import AuthorizeCode, TestSendMsg
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('AuthorizeCode/', AuthorizeCode.as_view()),
+    path('AllConnectedClients', TestSendMsg)
+]
+
+
+ws_url = [
+    # re_path(r'NotifyChannels/(?P<clientId>\w+)/$', ChannelService.as_asgi()),
+    path("NotifyChannels/<str:clientId>", ChannelService.as_asgi())
 ]

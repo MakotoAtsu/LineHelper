@@ -2,8 +2,23 @@ from django.http import HttpResponse, HttpRequest, JsonResponse
 from asgiref.sync import async_to_sync
 from django.views.generic.base import View
 from Notify.service.AuthorizeCodeHelper import AuthorizeCodeHelper
+from Notify.service.ChannelService import ChannelService
 
 # Create your views here.
+
+
+def TestSendMsg(req: HttpRequest):
+
+    print("AAAAAAAAA")
+
+    all_clients = [c.clientId for c in ChannelService.ws_client.values()]
+
+    target_client =  ChannelService.ws_client.get('123456',None)
+    if (target_client):
+        target_client.send_message('HAHA')
+    return JsonResponse({
+        "Clients": all_clients
+    })
 
 
 class AuthorizeCode(View):
@@ -31,6 +46,7 @@ class AuthorizeCode(View):
         room_info = await service.get_notify_room_info(access_token)
 
         # Step.3 使用 Access Token 取回聊天室資訊
+        
 
         data = {
             "Code": code,

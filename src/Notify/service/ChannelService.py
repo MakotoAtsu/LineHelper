@@ -15,6 +15,7 @@ class ChannelService(WebsocketConsumer):
         # self.clientId = ''
         self.accept()
         if (self.clientId in ChannelService.ws_client):
+            self.disconnect(False)
             return
 
         ChannelService.ws_client[self.clientId] = self
@@ -32,13 +33,15 @@ class ChannelService(WebsocketConsumer):
         print(f'Client:{self.clientId} - {text_data}')
         self.send('BackEnd Message')
 
-    def disconnect(self, code) -> None:
+    def disconnect(self, remove_dict: bool = True) -> None:
         """
         客戶端斷開連線
         :param code:斷開的錯誤碼
         :return: None
         """
-        del ChannelService.ws_client[self.clientId]
+        if (remove_dict):
+            del ChannelService.ws_client[self.clientId]
+            print(f'ClientId: {self.clientId} disconnected')
+            print(f'Current Connect amount : {len(ChannelService.ws_client)}')
+
         self.close()
-        print(f'ClientId: {self.clientId} disconnected')
-        print(f'Current Connect amount : {len(ChannelService.ws_client)}')

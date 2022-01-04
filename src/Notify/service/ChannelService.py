@@ -42,7 +42,3 @@ class ChannelService(WebsocketConsumer):
         self.close()
         print(f'ClientId: {self.clientId} disconnected')
         print(f'Current Connect amount : {len(ChannelService.ws_client)}')
-
-    def send_message(self, msg: str):
-        self.send(
-            f'"clientId": {self.clientId}, "message": {msg}')

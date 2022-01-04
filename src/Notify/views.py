@@ -1,3 +1,4 @@
+from os import stat
 from django.http import HttpResponse, HttpRequest, JsonResponse
 from asgiref.sync import async_to_sync
 from django.views.generic.base import View
@@ -13,17 +14,16 @@ def TestSendMsg(req: HttpRequest):
 
     all_clients = [c.clientId for c in ChannelService.ws_client.values()]
 
-    target_client =  ChannelService.ws_client.get('123456',None)
+    target_client = ChannelService.ws_client.get('123456', None)
     if (target_client):
-        target_client.send_message('HAHA')
+        target_client.send('HAHA')
     return JsonResponse({
         "Clients": all_clients
     })
 
 
 class AuthorizeCode(View):
-    @async_to_sync
-    async def get(self, request: HttpRequest):
+    def get(self, request: HttpRequest):
 
         # Step.1 從 QueryString 取得 AuthorizeCode 與 State
         query_str = request.GET
@@ -35,25 +35,36 @@ class AuthorizeCode(View):
 
         # Step.2 使用 AuthorizeCode 取回 Access Token
         service = AuthorizeCodeHelper()
-        token_response = await service.get_line_notify_access_token(code)
+        token_response = service.get_line_notify_access_token(code)
 
-        if (token_response['status'] != 200):
-            print(token_response)
+        if not token_response:
             return HttpResponse(f'Cannot get room access token...')
 
         access_token = token_response['access_token']
 
-        room_info = await service.get_notify_room_info(access_token)
-
         # Step.3 使用 Access Token 取回聊天室資訊
-        
+        room_info = service.get_notify_room_info(access_token)
+
+        if not room_info:
+            service.revoke_token(access_token)
+            return HttpResponse(f'Cannot get room info...')
 
         data = {
             "Code": code,
             'State': state,
             'Result': token_response,
-            'token': access_token,
-            'room_info': room_info
+            'Client_id': state,
+            'Token': access_token,
+            'Room': {
+                'Type': room_info['targetType'],
+                'Name': room_info['target']
+            }
         }
 
-        return JsonResponse(data)
+        print(data)
+        # Step.4 檢查是否已有 Client 連入 Channel
+        target_client = ChannelService.ws_client.get(state, None)
+        if (target_client):
+            target_client.send(access_token)
+
+        return JsonResponse(data, json_dumps_params={'ensure_ascii': False})

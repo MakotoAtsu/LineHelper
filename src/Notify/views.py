@@ -4,23 +4,10 @@ from asgiref.sync import async_to_sync
 from django.views.generic.base import View
 from Notify.service.AuthorizeCodeHelper import AuthorizeCodeHelper
 from Notify.service.ChannelService import ChannelService
+import json
+
 
 # Create your views here.
-
-
-def TestSendMsg(req: HttpRequest):
-
-    print("AAAAAAAAA")
-
-    all_clients = [c.clientId for c in ChannelService.ws_client.values()]
-
-    target_client = ChannelService.ws_client.get('123456', None)
-    if (target_client):
-        target_client.send('HAHA')
-    return JsonResponse({
-        "Clients": all_clients
-    })
-
 
 class AuthorizeCode(View):
     def get(self, request: HttpRequest):
@@ -65,6 +52,6 @@ class AuthorizeCode(View):
         # Step.4 檢查是否已有 Client 連入 Channel
         target_client = ChannelService.ws_client.get(state, None)
         if (target_client):
-            target_client.send(access_token)
+            target_client.send(json.dumps(data, ensure_ascii=False))
 
         return JsonResponse(data, json_dumps_params={'ensure_ascii': False})

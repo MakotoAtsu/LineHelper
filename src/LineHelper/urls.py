@@ -16,12 +16,11 @@ Including another URLconf
 from Notify.service.ChannelService import ChannelService
 from django.contrib import admin
 from django.urls import path, re_path
-from Notify.views import AuthorizeCode, TestSendMsg
+from Notify.views import AuthorizeCode
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('AuthorizeCode/', AuthorizeCode.as_view()),
-    path('AllConnectedClients', TestSendMsg)
 ]
 
 

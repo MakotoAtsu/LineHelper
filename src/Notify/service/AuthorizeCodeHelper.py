@@ -5,7 +5,7 @@ token_url = 'https://notify-bot.line.me/oauth/token'
 client_id = 'VpvEjfLIcrwNEPq6Px3NVZ'
 client_secret = '0OHgrhwcv8GhELDaNohMhAjFuVwC5s6JCpfgwN1tQea'
 redirect_uri = 'https://6ae5-61-216-248-79.ngrok.io/AuthorizeCode'
-room_info_uri = 'https://notify-api.line.me/api/statusa'
+room_info_uri = 'https://notify-api.line.me/api/status'
 revoke_token_uri = 'https://notify-api.line.me/api/revoke'
 
 

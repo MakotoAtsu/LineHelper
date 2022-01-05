@@ -15,16 +15,17 @@ Including another URLconf
 """
 from Notify.service.ChannelService import ChannelService
 from django.contrib import admin
-from django.urls import path, re_path
-from Notify.views import AuthorizeCode
+from django.urls import path
+from Notify.views import AuthorizeCode, GenerateLineNotify
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('AuthorizeCode/', AuthorizeCode.as_view()),
+    path('LineNotify/<str:uuid>', GenerateLineNotify.as_view())
 ]
 
 
 ws_url = [
     # re_path(r'NotifyChannels/(?P<clientId>\w+)/$', ChannelService.as_asgi()),
-    path("NotifyChannels/<str:clientId>", ChannelService.as_asgi())
+    path("NotifyChannels/<str:uuid>", ChannelService.as_asgi())
 ]

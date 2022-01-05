@@ -10,16 +10,16 @@ class ChannelService(WebsocketConsumer):
         self.accept()
         :return: None
         """
-        self.clientId: str = self.scope['url_route']['kwargs']['clientId']
+        self.uuid: str = self.scope['url_route']['kwargs']['uuid']
 
         # self.clientId = ''
         self.accept()
-        if (self.clientId in ChannelService.ws_client):
+        if (self.uuid in ChannelService.ws_client):
             self.disconnect(False)
             return
 
-        ChannelService.ws_client[self.clientId] = self
-        print(f'ClientId: {self.clientId} connected')
+        ChannelService.ws_client[self.uuid] = self
+        print(f'ClientId: {self.uuid} connected')
         print(f'Current Connect amount : {len(ChannelService.ws_client)}')
 
     def receive(self, text_data=None, bytes_data=None) -> None:
@@ -30,7 +30,7 @@ class ChannelService(WebsocketConsumer):
         :return:  None
         """
         # 業務邏輯,websocket 轉發
-        print(f'Client:{self.clientId} - {text_data}')
+        print(f'Client:{self.uuid} - {text_data}')
         self.send('BackEnd Message')
 
     def disconnect(self, remove_dict: bool = True) -> None:
@@ -40,8 +40,8 @@ class ChannelService(WebsocketConsumer):
         :return: None
         """
         if (remove_dict):
-            del ChannelService.ws_client[self.clientId]
-            print(f'ClientId: {self.clientId} disconnected')
+            del ChannelService.ws_client[self.uuid]
+            print(f'ClientId: {self.uuid} disconnected')
             print(f'Current Connect amount : {len(ChannelService.ws_client)}')
 
         self.close()

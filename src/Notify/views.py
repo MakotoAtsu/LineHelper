@@ -1,6 +1,6 @@
 from os import stat
 from django.http import HttpResponse, HttpRequest, JsonResponse
-from asgiref.sync import async_to_sync
+from django.shortcuts import redirect
 from django.views.generic.base import View
 from Notify.service.AuthorizeCodeHelper import AuthorizeCodeHelper
 from Notify.service.ChannelService import ChannelService
@@ -48,10 +48,21 @@ class AuthorizeCode(View):
             }
         }
 
-        print(data)
+        # print(data)
         # Step.4 檢查是否已有 Client 連入 Channel
         target_client = ChannelService.ws_client.get(state, None)
         if (target_client):
             target_client.send(json.dumps(data, ensure_ascii=False))
+            # 發送完畢後關閉 WebSocket
+            target_client.disconnect()
 
         return JsonResponse(data, json_dumps_params={'ensure_ascii': False})
+
+
+class GenerateLineNotify(View):
+    def get(self, request: HttpRequest, uuid: str):
+
+        print(f'UUID:{uuid}')
+        redirect_url = AuthorizeCodeHelper.get_generate_line_notify_url(uuid)
+
+        return redirect(redirect_url)

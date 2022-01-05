@@ -4,9 +4,11 @@ import httpx
 token_url = 'https://notify-bot.line.me/oauth/token'
 client_id = 'VpvEjfLIcrwNEPq6Px3NVZ'
 client_secret = '0OHgrhwcv8GhELDaNohMhAjFuVwC5s6JCpfgwN1tQea'
-redirect_uri = 'https://6ae5-61-216-248-79.ngrok.io/AuthorizeCode'
 room_info_uri = 'https://notify-api.line.me/api/status'
 revoke_token_uri = 'https://notify-api.line.me/api/revoke'
+line_oauth_url = 'https://notify-bot.line.me/oauth/authorize'
+
+redirect_uri = 'http://line.pixis.com.tw:8000/AuthorizeCode'
 
 
 class AuthorizeCodeHelper:
@@ -41,3 +43,9 @@ class AuthorizeCodeHelper:
         httpx.post(revoke_token_uri, headers={
             'Authorization': f'Bearer {token}'
         })
+
+    @staticmethod
+    def get_generate_line_notify_url(uuid: str):
+
+        url = f'{line_oauth_url}?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope=notify&state={uuid}&response_mode=query'
+        return url
